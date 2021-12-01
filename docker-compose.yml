@@ -1,0 +1,54 @@
+# For more information: https://laravel.com/docs/sail
+version: '3'
+services:
+    quiz-web:
+        container_name: laptop_project
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                user: bw
+                uid: 1000
+        # image: quiz-web
+        ports:
+            - '${APP_PORT:-81}:80'
+        networks:
+            - quiz-web-net
+
+    laptop_project:
+        container_name: laptop_project
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+            args:
+                user: bw
+                uid: 1000
+        # image: quiz-web-dev
+        ports:
+            - '${APP_PORT:-81}:80'
+        volumes:
+            - "./:/var/www/html/quiz"
+        networks:
+            - quiz-web-net
+
+    mysql:
+        image: mysql:5.7
+        restart: unless-stopped
+        tty: true
+        ports:
+            - '${FORWARD_DB_PORT:-3307}:3307'
+        environment:
+            MYSQL_ROOT_PASSWORD: '123@123a'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+            SERVICE_NAME: mysql
+        networks:
+            - quiz-web-net
+networks:
+    quiz-web-net:
+        driver: bridge
+volumes:
+    sailmysql:
+        driver: local
